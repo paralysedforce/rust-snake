@@ -161,25 +161,33 @@ impl Game {
                keycode: Some(Keycode::Down) | Some(Keycode::S),
                ..
            } => {
-               self.game_state.input_direction = Direction::Down;
+               if self.game_state.running_state == RunningState::Running {
+                   self.game_state.input_direction = Direction::Down;
+               }
            },
            Event::KeyDown {
                keycode: Some(Keycode::Right) | Some(Keycode::D),
                ..
            } => {
-               self.game_state.input_direction = Direction::Right;
+               if self.game_state.running_state == RunningState::Running {
+                   self.game_state.input_direction = Direction::Right;
+               }
            },
            Event::KeyDown {
                keycode: Some(Keycode::Left) | Some(Keycode::A),
                ..
            } => {
-               self.game_state.input_direction = Direction::Left;
+               if self.game_state.running_state == RunningState::Running {
+                   self.game_state.input_direction = Direction::Left;
+               }
            },
            Event::KeyDown {
                keycode: Some(Keycode::Up) | Some(Keycode::W),
                ..
            } => {
-               self.game_state.input_direction = Direction::Up;
+               if self.game_state.running_state == RunningState::Running {
+                   self.game_state.input_direction = Direction::Up;
+               }
            },
 
            
