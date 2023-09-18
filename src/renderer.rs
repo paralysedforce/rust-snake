@@ -16,12 +16,12 @@ impl Renderer {
         self.canvas.clear();
 
         self.canvas.set_draw_color(Color::GREEN);
-        for point in game_state.player.iter() {
+        for point in game_state.player.body.iter() {
             self.draw_point(&point)?;
         }
 
         self.canvas.set_draw_color(Color::RED);
-        self.draw_point(&game_state.food)?;
+        self.draw_point(&game_state.food.location)?;
 
         if game_state.running_state == RunningState::Paused {
             self.canvas.set_draw_color(Color::BLUE);

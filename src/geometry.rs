@@ -15,14 +15,25 @@ impl Add<Point> for Point {
 #[derive(PartialEq, Copy, Clone)]
 pub enum Direction { Up, Left, Right, Down }
 
-pub fn opposite(direction: &Direction) -> Direction {
-    match direction {
-        Direction::Up => Direction::Down,
-        Direction::Down => Direction::Up,
-        Direction::Left => Direction::Right,
-        Direction::Right => Direction::Left
+impl Direction {
+    pub fn unit(&self) -> Point {
+        match self {
+            Direction::Up => Point(0, -1),
+            Direction::Down => Point(0, 1),
+            Direction::Left => Point(-1, 0),
+            Direction::Right => Point(1, 0)
+        }
     }
-} 
+    pub fn opposite(&self) -> Direction {
+        match self {
+            Direction::Up => Direction::Down,
+            Direction::Down => Direction::Up,
+            Direction::Left => Direction::Right,
+            Direction::Right => Direction::Left
+        }
+    }
+
+}
 
 pub fn in_bounds(point: &Point) -> bool {
     let Point(x, y) = point;

@@ -3,32 +3,44 @@ extern crate sdl2;
 use sdl2::Sdl;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use std::collections::VecDeque;
 use std::time::{Duration, Instant};
-use rand::prelude::*;
 
 use crate::geometry::*;
 use crate::renderer::Renderer;
+use crate::entities::player::Player;
+use crate::entities::food::Food;
+
+
+const FRAME_RATE: Duration = Duration::new(0, 1_000_000_000u32 / 30);
+const REFRESH_RATE: Duration = Duration::new(0, 1_000_000_000u32 / 10);
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum RunningState { Paused, Running, Exit }
 
 pub struct GameState {
-    pub food: Point,
-    pub player: VecDeque<Point>,
+    pub player: Player,
+    pub food: Food,
     pub running_state: RunningState,
     input_direction: Direction,
-    player_direction: Direction,
 }
 
 impl GameState {
     pub fn new() -> GameState {
         GameState {
-            player: VecDeque::from([Point(1,1), Point(2, 1), Point(3, 1)]),
-            food: Point(3, 3),
+            player: Player::new(),
+            food: Food::new(),
             running_state: RunningState::Paused,
-            player_direction: Direction::Right,
             input_direction: Direction::Right,
+        }
+    }
+
+    pub fn update(&mut self)
+    {
+        self.player.update(&self.food, self.input_direction);
+        self.food.update(&self.player);
+
+        if self.player.is_dead() {
+            self.running_state = RunningState::Exit;
         }
     }
 }
@@ -39,8 +51,6 @@ pub struct Game {
     game_state: GameState
 }
 
-const FRAME_RATE: Duration = Duration::new(0, 1_000_000_000u32 / 30);
-const REFRESH_RATE: Duration = Duration::new(0, 1_000_000_000u32 / 10);
 
 // Game main body
 impl Game {
@@ -80,14 +90,14 @@ impl Game {
 
            match self.game_state.running_state {
                RunningState::Exit => {
-                   println!("Final score: {}", self.game_state.player.len());
+                   println!("Final score: {}", self.game_state.player.score);
                    break 'main;
                },
                RunningState::Running => {
                    let now = Instant::now();
-                   let should_tick = now.duration_since(last_refresh) > REFRESH_RATE;
-                   if should_tick {
-                       self.tick();
+                   let should_update = now.duration_since(last_refresh) > REFRESH_RATE;
+                   if should_update {
+                       self.game_state.update();
                        last_refresh = now;
                    }
                }
@@ -100,52 +110,6 @@ impl Game {
 
      
      Ok(())
-   }
-
-   fn tick(&mut self) -> () {
-       match self.game_state.running_state {
-           RunningState::Running => {
-               if self.game_state.input_direction != opposite(&self.game_state.player_direction){
-                   self.game_state.player_direction = self.game_state.input_direction;
-               }
-
-               let head: Point = self.game_state.player.back().unwrap().clone();
-               let next_move = match self.game_state.player_direction {
-                   Direction::Up => Point(0, -1),
-                   Direction::Down => Point(0, 1),
-                   Direction::Left => Point(-1, 0),
-                   Direction::Right => Point(1, 0)
-               };
-               let next_location = head + next_move;
-               let self_intersects = self.game_state.player.contains(&next_location);
-
-               if in_bounds(&next_location) && !self_intersects {
-                   let food_eaten = next_location == self.game_state.food;
-                   if food_eaten {
-                       let mut rng = thread_rng();
-                       loop {
-                           let food_x = rng.gen_range(1..GRID_X_SIZE);
-                           let food_y = rng.gen_range(1..GRID_Y_SIZE);
-                           let food = Point(food_x, food_y);
-
-                           if !self.game_state.player.contains(&food){
-                               self.game_state.food = food;
-                               break;
-                           }
-                       }
-                   }
-
-                   else {
-                       self.game_state.player.pop_front();
-                   }
-                   self.game_state.player.push_back(next_location);
-               }
-               else {
-                   self.game_state.running_state = RunningState::Exit;
-               }
-           },
-           _ => {}
-       }
    }
 
    fn process_events(&mut self, event: Event) {
