@@ -19,14 +19,9 @@ impl Player {
         }
     }
 
-    pub fn update(&mut self, food:&Food, input_direction: Option<Direction>) -> () {
-        match input_direction {
-            Some(d) => {
-                if d != self.direction.opposite() {
-                    self.direction = d.clone();
-                }
-            },
-            None => {}
+    pub fn update(&mut self, food:&Food, input_direction: Direction) -> () {
+        if input_direction != self.direction.opposite() {
+            self.direction = input_direction.clone();
         }
 
        let head: Point = self.body.back().unwrap().clone();

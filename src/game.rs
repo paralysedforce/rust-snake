@@ -4,7 +4,6 @@ use sdl2::Sdl;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use std::time::{Duration, Instant};
-use std::collections::VecDeque;
 
 use crate::geometry::*;
 use crate::renderer::Renderer;
@@ -22,7 +21,7 @@ pub struct GameState {
     pub player: Player,
     pub food: Food,
     pub running_state: RunningState,
-    input_direction: VecDeque<Direction>,
+    input_direction: Direction,
 }
 
 impl GameState {
@@ -31,13 +30,13 @@ impl GameState {
             player: Player::new(),
             food: Food::new(),
             running_state: RunningState::Paused,
-            input_direction: VecDeque::new()
+            input_direction: Direction::Right,
         }
     }
 
     pub fn update(&mut self)
     {
-        self.player.update(&self.food, self.input_direction.pop_front());
+        self.player.update(&self.food, self.input_direction);
         self.food.update(&self.player);
 
         if self.player.is_dead() {
@@ -127,7 +126,7 @@ impl Game {
                ..
            } => {
                if self.game_state.running_state == RunningState::Running {
-                   self.game_state.input_direction.push_back(Direction::Down);
+                   self.game_state.input_direction = Direction::Down;
                }
            },
            Event::KeyDown {
@@ -135,7 +134,7 @@ impl Game {
                ..
            } => {
                if self.game_state.running_state == RunningState::Running {
-                   self.game_state.input_direction.push_back(Direction::Right);
+                   self.game_state.input_direction = Direction::Right;
                }
            },
            Event::KeyDown {
@@ -143,7 +142,7 @@ impl Game {
                ..
            } => {
                if self.game_state.running_state == RunningState::Running {
-                   self.game_state.input_direction.push_back(Direction::Left);
+                   self.game_state.input_direction = Direction::Left;
                }
            },
            Event::KeyDown {
@@ -151,7 +150,7 @@ impl Game {
                ..
            } => {
                if self.game_state.running_state == RunningState::Running {
-                   self.game_state.input_direction.push_back(Direction::Up);
+                   self.game_state.input_direction = Direction::Up;
                }
            },
 
